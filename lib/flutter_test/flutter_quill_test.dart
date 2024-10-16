@@ -1,8 +1,13 @@
 import 'dart:convert';
 
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_observer/main.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:developer' as developer;
+import 'dart:html' as html;
 
 class FlutterQuillTest extends StatefulWidget {
   const FlutterQuillTest({super.key});
@@ -14,6 +19,122 @@ class FlutterQuillTest extends StatefulWidget {
 class _FlutterQuillTestState extends State<FlutterQuillTest> {
   final _wYSIWYGTextEditorControllerComposed = quill.QuillController.basic();
   final _wYSIWYGTextEditorControllerExtract = quill.QuillController.basic();
+
+  final quillFocusNode = FocusNode();
+
+  ///Map of font families in string
+  Map<String, String>? fontFamilies = {
+    'Roboto': 'roboto',
+    'Open Sans': 'open-sans',
+    'Lato': 'lato',
+    'Montserrat': 'montserrat',
+    'Roboto Condensed': 'roboto-condensed',
+    'Oswald': 'oswald',
+    'Poppins': 'poppins',
+    'Slabo 27px': 'slabo-27px',
+    'NotoSans': 'noto-sans',
+    'Roboto Mono': 'roboto-mono',
+    'Merriweather': 'merriweather',
+    'Clear': 'Clear'
+  };
+
+  final List<String> imageFileExtensions = [
+    '.jpeg',
+    '.jpg',
+    '.png',
+    // '.gif', //depending on them
+    // '.webp',
+    // '.tif',
+    // '.heic'
+  ];
+
+  // Define max file size (e.g., 5 MB)
+  static const int maxFileSizeInBytes = 3 * 1024 * 1024;
+
+  OnDragDoneCallback get _onDragDone {
+    return (details) async {
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final file = details.files.first;
+      final isSupported =
+          imageFileExtensions.any((ext) => file.name.endsWith(ext));
+      if (!isSupported) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            duration: const Duration(milliseconds: 3000),
+            content: Text(
+              'Only images are supported right now: ${file.mimeType}, ${file.name}, ${file.path}, $imageFileExtensions',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+        return;
+      }
+      Future<int> fileSize = file.length();
+      developer.log('File size: ${await fileSize / 1000 / 1000}');
+      final isValidSize = 3 >= await fileSize / 1000 / 1000;
+      if (!isValidSize) {
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              duration: const Duration(milliseconds: 3000),
+              content: Text(
+                'Only file size supported right now: Maximum of 3 MB',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+          );
+          return;
+        }
+      }
+      // To get this extension function please import flutter_quill_extensions
+      _wYSIWYGTextEditorControllerComposed.insertImageBlock(
+        imageSource: file.path,
+      );
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Image is inserted.'),
+        ),
+      );
+    };
+  }
+
+  Future<bool> _isValidImage(String imageUrl) async {
+    // Fetch the image to get its size
+    try {
+      final response = await html.HttpRequest.request(
+        imageUrl,
+        responseType: 'blob', // Use 'blob' to get binary data
+      );
+
+      // Check if the size exceeds the maximum limit
+      final sizeInBytes = response.response.size; // size is in bytes
+      return sizeInBytes <= maxFileSizeInBytes; // Check size constraint
+    } catch (e) {
+      // Handle any errors that occur during the request
+      developer.log('Error fetching image: $e');
+      return false; // Invalid image
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    quillFocusNode.canRequestFocus = false;
+  }
+
+  @override
+  void dispose() {
+    _wYSIWYGTextEditorControllerComposed.dispose();
+    _wYSIWYGTextEditorControllerExtract.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final customTheme = Theme.of(context).extension<CustomTheme>();
@@ -79,12 +200,23 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                           child: quill.QuillToolbar.simple(
                             controller: _wYSIWYGTextEditorControllerComposed,
                             configurations:
-                                const quill.QuillSimpleToolbarConfigurations(
+                                quill.QuillSimpleToolbarConfigurations(
+                              dialogTheme: quill.QuillDialogTheme(
+                                dialogBackgroundColor: isDarkMode
+                                    ? Colors.grey.shade900
+                                    : Colors.grey.shade100,
+                              ),
+                              embedButtons: FlutterQuillEmbeds.toolbarButtons(
+                                imageButtonOptions: null,
+                                cameraButtonOptions: null,
+                                videoButtonOptions: null,
+                              ),
+                              fontFamilyValues: fontFamilies,
+                              showFontFamily: true,
                               showDividers: true,
                               showAlignmentButtons: true,
                               showInlineCode: false,
                               showCodeBlock: false,
-                              showFontFamily: true,
                               showColorButton: false,
                               showBackgroundColorButton: false,
                               showSearchButton: false,
@@ -92,7 +224,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                               showSubscript: false,
                               showStrikeThrough: false,
                               sectionDividerColor:
-                                  Color.fromARGB(170, 255, 193, 7),
+                                  const Color.fromARGB(170, 255, 193, 7),
                               sectionDividerSpace: 5.0,
                               toolbarSectionSpacing: 5.0,
                             ),
@@ -116,23 +248,79 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                         child: quill.QuillEditor.basic(
                           controller: _wYSIWYGTextEditorControllerComposed,
                           configurations: quill.QuillEditorConfigurations(
-                              padding: const EdgeInsets.all(8.0),
-                              disableClipboard: false,
-                              maxContentWidth: parentWidth,
-                              minHeight: 200,
-                              maxHeight: 400,
-                              sharedConfigurations: const quill
-                                  .QuillSharedConfigurations(
-                                  locale: Locale(
-                                      'en_US'))), //make this as ready-only if only showing a created flutter_quill text
+                            builder: (context, rawEditor) {
+                              return DropTarget(
+                                onDragDone: _onDragDone,
+                                child: rawEditor,
+                              );
+                            },
+                            embedBuilders: kIsWeb
+                                ? FlutterQuillEmbeds.editorWebBuilders(
+                                    imageEmbedConfigurations:
+                                        QuillEditorImageEmbedConfigurations(
+                                      // imageProviderBuilder: (context, imageUrl) {
+
+                                      // },
+                                      imageErrorWidgetBuilder:
+                                          (context, error, stackTrace) {
+                                        // Display an error icon in place of the image
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              duration: const Duration(
+                                                  milliseconds: 3000),
+                                              content: Text(
+                                                'Error loading image: ${error.toString()}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                              ),
+                                            ),
+                                          );
+                                        });
+                                        return const Icon(
+                                          Icons.error,
+                                          color: Colors.red,
+                                          size: 50.0,
+                                        );
+                                      },
+                                    ),
+                                    videoEmbedConfigurations: null,
+                                  )
+                                : FlutterQuillEmbeds.editorBuilders(
+                                    videoEmbedConfigurations: null,
+                                  ),
+                            padding: const EdgeInsets.all(8.0),
+                            disableClipboard: false,
+                            maxContentWidth: parentWidth,
+                            minHeight: 200,
+                            maxHeight: 400,
+                            sharedConfigurations:
+                                const quill.QuillSharedConfigurations(
+                              locale: Locale('en_US'),
+                            ),
+                          ), //make this as ready-only if only showing a created flutter_quill text
                         ),
                       ),
                       const SizedBox(
                         height: 20,
                       ),
                       quill.QuillEditor.basic(
+                        focusNode: quillFocusNode,
                         controller: _wYSIWYGTextEditorControllerExtract,
                         configurations: quill.QuillEditorConfigurations(
+                            embedBuilders: kIsWeb
+                                ? FlutterQuillEmbeds.editorWebBuilders(
+                                    videoEmbedConfigurations: null,
+                                  )
+                                : FlutterQuillEmbeds.editorBuilders(
+                                    videoEmbedConfigurations: null,
+                                  ),
                             padding: const EdgeInsets.all(8.0),
                             disableClipboard: true,
                             maxContentWidth: parentWidth,
