@@ -2,11 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_observer/flutter_test/flutter_quill_test.dart';
 import 'package:flutter_observer/flutter_test/flutter_textformfield.dart';
+import 'package:flutter_observer/flutter_test/flutter_web.dart';
 import 'package:flutter_observer/flutter_test/image_memory.dart';
+import 'package:flutter_observer/flutter_test/media_query_test.dart';
 import 'package:flutter_observer/generated/l10n.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    const MyApp(),
+    // MediaQuery(
+    //   data: MediaQueryData.fromView(
+    //           WidgetsBinding.instance.platformDispatcher.views.single)
+    //       .copyWith(
+    //           textScaler: const TextScaler.linear(
+    //               1)), //intercept font size changes from user's device
+    //   child: const MyApp(),
+    // ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -48,7 +61,7 @@ class MyApp extends StatelessWidget {
       //   useMaterial3: true,
       // ),
       home:
-          const FlutterQuillTest(), //const MyHomePage(title: 'Flutter Demo Home Page'),
+          const FlutterWebView(), //const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }

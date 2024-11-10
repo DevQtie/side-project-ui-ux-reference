@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hey there, I am DevQt ng Pinas,
+this file is reserved for http request if necessary.
+I've already setup a configuration in the AndroidManifest.xml,
+but I decided to comment it out while it is not needed yet. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Change this IP address/link according to what is the actual API domain-->
+        <domain includeSubdomains="true">122.54.197.116</domain>
+    </domain-config>
+</network-security-config>

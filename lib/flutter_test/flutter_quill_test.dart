@@ -4,10 +4,13 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_observer/main.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:developer' as developer;
-import 'dart:html' as html;
+// import 'dart:io' if (dart.library.html) 'dart:html'
+//     as html; // Platform specific import
+// import 'dart:html' as html;
 
 class FlutterQuillTest extends StatefulWidget {
   const FlutterQuillTest({super.key});
@@ -104,23 +107,41 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
     };
   }
 
-  Future<bool> _isValidImage(String imageUrl) async {
-    // Fetch the image to get its size
-    try {
-      final response = await html.HttpRequest.request(
-        imageUrl,
-        responseType: 'blob', // Use 'blob' to get binary data
-      );
+  // Future<bool> _isValidImage(String imageUrl) async {
+  //   // Fetch the image to get its size
+  //   try {
+  //     final response = await html.HttpRequest.request(
+  //       imageUrl,
+  //       responseType: 'blob', // Use 'blob' to get binary data
+  //     );
 
-      // Check if the size exceeds the maximum limit
-      final sizeInBytes = response.response.size; // size is in bytes
-      return sizeInBytes <= maxFileSizeInBytes; // Check size constraint
-    } catch (e) {
-      // Handle any errors that occur during the request
-      developer.log('Error fetching image: $e');
-      return false; // Invalid image
-    }
-  }
+  //     // Check if the size exceeds the maximum limit
+  //     final sizeInBytes = response.response.size; // size is in bytes
+  //     return sizeInBytes <= maxFileSizeInBytes; // Check size constraint
+  //   } catch (e) {
+  //     // Handle any errors that occur during the request
+  //     developer.log('Error fetching image: $e');
+  //     return false; // Invalid image
+  //   }
+  // }
+
+// Function to save the Delta to a file (download)
+// void saveDeltaAsFile(Delta delta) {
+//   // Convert Delta to JSON
+//   final jsonDelta = jsonEncode(delta.toJson());
+
+//   // Create a Blob from the JSON string
+//   final blob = html.Blob([jsonDelta], 'application/json');
+
+//   // Create an anchor element to trigger the download
+//   final url = html.Url.createObjectUrlFromBlob(blob);
+//   final anchor = html.AnchorElement(href: url)
+//     ..setAttribute('download', 'delta.json')
+//     ..click();
+
+//   // Clean up the URL object
+//   html.Url.revokeObjectUrl(url);
+// }
 
   @override
   void initState() {
@@ -140,6 +161,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
     final customTheme = Theme.of(context).extension<CustomTheme>();
     final Brightness brightness = MediaQuery.of(context).platformBrightness;
     final bool isDarkMode = brightness == Brightness.dark;
+    double bottomPadding = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
       appBar: AppBar(
@@ -158,7 +180,8 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
           borderRadius: BorderRadius.circular(10.0), // Border radius
           border: Border.all(color: Colors.transparent), // Border color
         ),
-        padding: const EdgeInsets.all(15.0),
+        // padding: const EdgeInsets.all(15.0),
+        padding: EdgeInsets.only(bottom: bottomPadding),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
