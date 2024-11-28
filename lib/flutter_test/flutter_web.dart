@@ -15,12 +15,13 @@ class _FlutterWebViewState extends State<FlutterWebView> {
   void initState() {
     super.initState();
     controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted) // This resolves the issue of using HTTP
+      ..setJavaScriptMode(
+          JavaScriptMode.unrestricted) // This resolves the issue of using HTTP
       ..loadRequest(
         // Uri.parse('https://flutter.dev'),
         // Uri.parse('https://raquelpawnshop.com/'),
 
-        Uri.parse('http://122.54.197.116:2110/#/dashboard'),
+        Uri.parse('http://122.54.197.116:2110/'),
       );
   }
 
@@ -28,7 +29,8 @@ class _FlutterWebViewState extends State<FlutterWebView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter WebView'),
+        toolbarHeight: 0,
+        // title: const Text('Flutter WebView'),
       ),
       body: WebViewWidget(
         controller: controller,

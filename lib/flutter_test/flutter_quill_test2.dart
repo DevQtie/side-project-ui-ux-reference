@@ -1,27 +1,23 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_observer/main.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show Uint8List, compute, kIsWeb;
 import 'dart:developer' as developer;
-// import 'dart:io' if (dart.library.html) 'dart:html'
-//     as html; // Platform specific import
-// import 'dart:html' as html;
 
-class FlutterQuillTest extends StatefulWidget {
-  const FlutterQuillTest({super.key});
+class FlutterQuillTest2 extends StatefulWidget {
+  const FlutterQuillTest2({super.key});
 
   @override
-  State<FlutterQuillTest> createState() => _FlutterQuillTestState();
+  State<FlutterQuillTest2> createState() => _FlutterQuillTest2State();
 }
 
-class _FlutterQuillTestState extends State<FlutterQuillTest> {
-  final _wYSIWYGTextEditorControllerComposed = quill.QuillController.basic();
-  final _wYSIWYGTextEditorControllerExtract = quill.QuillController.basic();
+class _FlutterQuillTest2State extends State<FlutterQuillTest2> {
+  final _contentGeneratorController = quill.QuillController.basic();
 
   final quillFocusNode = FocusNode();
 
@@ -45,17 +41,35 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
     '.jpeg',
     '.jpg',
     '.png',
-    // '.gif', //depending on them
-    // '.webp',
-    // '.tif',
-    // '.heic'
   ];
-
-  // Define max file size (e.g., 5 MB)
-  static const int maxFileSizeInBytes = 3 * 1024 * 1024;
 
   String documentJson = '';
   final textEditingController = TextEditingController();
+
+  Future<void> insertBase64Image(DropItem file) async {
+    try {
+      // Convert the file to a Base64-encoded string
+      // final bytes = await file.readAsBytes();
+      // final base64String = base64Encode(bytes); // need to refactor
+
+      // Convert the file to a Base64-encoded string asynchronously
+      final base64String =
+          await compute(_convertToBase64, await file.readAsBytes());
+
+      // Construct the Base64 image source
+      final imageSource =
+          'data:image/png;base64,$base64String'; // Adjust MIME type if necessary (e.g., `image/jpeg`)
+
+      // Insert the image using the Base64 string
+      _contentGeneratorController.insertImageBlock(imageSource: imageSource);
+    } catch (e) {
+      // Handle any errors gracefully
+      debugPrint('Error inserting image: $e');
+    }
+  }
+
+// Helper function for Base64 conversion (runs in an isolate to avoid UI blocking)
+  String _convertToBase64(Uint8List bytes) => base64Encode(bytes);
 
   OnDragDoneCallback get _onDragDone {
     return (details) async {
@@ -99,9 +113,10 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
         }
       }
       // To get this extension function please import flutter_quill_extensions
-      _wYSIWYGTextEditorControllerComposed.insertImageBlock(
+      _contentGeneratorController.insertImageBlock(
         imageSource: file.path,
       );
+      // await insertBase64Image(file);
       scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Image is inserted.'),
@@ -109,42 +124,6 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
       );
     };
   }
-
-  // Future<bool> _isValidImage(String imageUrl) async {
-  //   // Fetch the image to get its size
-  //   try {
-  //     final response = await html.HttpRequest.request(
-  //       imageUrl,
-  //       responseType: 'blob', // Use 'blob' to get binary data
-  //     );
-
-  //     // Check if the size exceeds the maximum limit
-  //     final sizeInBytes = response.response.size; // size is in bytes
-  //     return sizeInBytes <= maxFileSizeInBytes; // Check size constraint
-  //   } catch (e) {
-  //     // Handle any errors that occur during the request
-  //     developer.log('Error fetching image: $e');
-  //     return false; // Invalid image
-  //   }
-  // }
-
-// Function to save the Delta to a file (download)
-// void saveDeltaAsFile(Delta delta) {
-//   // Convert Delta to JSON
-//   final jsonDelta = jsonEncode(delta.toJson());
-
-//   // Create a Blob from the JSON string
-//   final blob = html.Blob([jsonDelta], 'application/json');
-
-//   // Create an anchor element to trigger the download
-//   final url = html.Url.createObjectUrlFromBlob(blob);
-//   final anchor = html.AnchorElement(href: url)
-//     ..setAttribute('download', 'delta.json')
-//     ..click();
-
-//   // Clean up the URL object
-//   html.Url.revokeObjectUrl(url);
-// }
 
   @override
   void initState() {
@@ -154,8 +133,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
 
   @override
   void dispose() {
-    _wYSIWYGTextEditorControllerComposed.dispose();
-    _wYSIWYGTextEditorControllerExtract.dispose();
+    _contentGeneratorController.dispose();
     textEditingController.dispose();
     super.dispose();
   }
@@ -190,12 +168,15 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Source Text',
-                  textAlign: TextAlign.start,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text('Source Content',
+                    textAlign: TextAlign.start,
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+              ),
               LayoutBuilder(
                 builder: (context, constraint) {
                   double parentWidth = constraint.maxWidth;
@@ -225,7 +206,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                                   : ColorScheme.light(
                                       surface: Colors.grey.shade300)),
                           child: quill.QuillToolbar.simple(
-                            controller: _wYSIWYGTextEditorControllerComposed,
+                            controller: _contentGeneratorController,
                             configurations:
                                 quill.QuillSimpleToolbarConfigurations(
                               dialogTheme: quill.QuillDialogTheme(
@@ -234,7 +215,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                                     : Colors.grey.shade100,
                               ),
                               embedButtons: FlutterQuillEmbeds.toolbarButtons(
-                                imageButtonOptions: null,
+                                // imageButtonOptions: null,
                                 cameraButtonOptions: null,
                                 videoButtonOptions: null,
                               ),
@@ -257,7 +238,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                             ),
                           ),
                         ),
-                      ), //for viewing of created flutter_quill text, don't show the QuillToolbar
+                      ),
                       Container(
                         width: parentWidth,
                         height: 400,
@@ -273,7 +254,7 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                                   : Colors.lightBlue), // Border color
                         ),
                         child: quill.QuillEditor.basic(
-                          controller: _wYSIWYGTextEditorControllerComposed,
+                          controller: _contentGeneratorController,
                           configurations: quill.QuillEditorConfigurations(
                             builder: (context, rawEditor) {
                               return DropTarget(
@@ -285,9 +266,6 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                                 ? FlutterQuillEmbeds.editorWebBuilders(
                                     imageEmbedConfigurations:
                                         QuillEditorImageEmbedConfigurations(
-                                      // imageProviderBuilder: (context, imageUrl) {
-
-                                      // },
                                       imageErrorWidgetBuilder:
                                           (context, error, stackTrace) {
                                         // Display an error icon in place of the image
@@ -331,70 +309,52 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
                                 const quill.QuillSharedConfigurations(
                               locale: Locale('en_US'),
                             ),
-                          ), //make this as ready-only if only showing a created flutter_quill text
+                          ),
                         ),
                       ),
                       const SizedBox(
                         height: 20,
                       ),
-                      quill.QuillEditor.basic(
-                        focusNode: quillFocusNode,
-                        controller: _wYSIWYGTextEditorControllerExtract,
-                        configurations: quill.QuillEditorConfigurations(
-                            embedBuilders: kIsWeb
-                                ? FlutterQuillEmbeds.editorWebBuilders(
-                                    videoEmbedConfigurations: null,
-                                  )
-                                : FlutterQuillEmbeds.editorBuilders(
-                                    videoEmbedConfigurations: null,
-                                  ),
-                            padding: const EdgeInsets.all(8.0),
-                            disableClipboard: true,
-                            maxContentWidth: parentWidth,
-                            minHeight: 200,
-                            sharedConfigurations: const quill
-                                .QuillSharedConfigurations(
-                                locale: Locale(
-                                    'en_US'))), //make this as ready-only if only showing a created flutter_quill text
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0, vertical: 8.0),
+                          child: Text('Generated Content',
+                              textAlign: TextAlign.start,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      TextFormField(
+                        key: const ValueKey('jsonData'),
+                        controller: textEditingController,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
                       ),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            final delta = _wYSIWYGTextEditorControllerComposed
-                                .document
-                                .toDelta();
+                            final delta =
+                                _contentGeneratorController.document.toDelta();
                             final json = jsonDecode(jsonEncode(delta.toJson()));
-                            developer.log(
-                                'Data type: ${json.runtimeType.toString()}');
-                            developer.log('List JSON: $json');
-                            // final plainText =
-                            //     _wYSIWYGTextEditorControllerComposed.document
-                            //         .toPlainText(); // for plain text
                             setState(() {
-                              // Ensure the selection offset is valid
-                              // int insertOffset =
-                              //     _wYSIWYGTextEditorControllerExtract
-                              //         .selection.baseOffset;
-
-                              // if (insertOffset == -1) {
-                              //   // Default to appending at the end if selection is invalid
-                              //   insertOffset =
-                              //       _wYSIWYGTextEditorControllerExtract
-                              //           .document.length;
-                              // }
-                              // _wYSIWYGTextEditorControllerExtract.document
-                              //     .insert(insertOffset, plainText); // for plain text
-                              _wYSIWYGTextEditorControllerExtract.document =
-                                  quill.Document.fromJson(json);
                               // Assuming json is your input JSON data for the document
                               final document = quill.Document.fromJson(json);
 
                               // Convert the document back to JSON for easy logging
                               documentJson =
                                   jsonEncode(document.toDelta().toJson());
-                              // Log the JSON format of the document
-                              developer.log("Document JSON: $documentJson");
+                              textEditingController.text = documentJson;
+                              developer.log('String Delta: $documentJson');
                             });
                           },
                           style: ElevatedButton.styleFrom(
@@ -421,22 +381,3 @@ class _FlutterQuillTestState extends State<FlutterQuillTest> {
     );
   }
 }
-
-// final delta = _controllerComposed.document.toDelta();
-  
-// final json = jsonDecode(jsonEncode(delta.toJson()));
-
-// developer.log('Data type: ${json.runtimeType.toString()}'); // option 1
-
-// setState(() {
-
-//     // Assuming json is your input JSON data for the document
-//     final document = quill.Document.fromJson(json);
-
-//     // Convert the document back to JSON for easy logging
-//     final documentJson =
-//         jsonEncode(document.toDelta().toJson());
-
-//     // Log the JSON format of the document
-//     developer.log("Document JSON: $documentJson"); // option 2
-// });

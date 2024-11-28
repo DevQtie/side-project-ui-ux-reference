@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.4.14+1
+version: 1.5.23+1
 
 environment:
   sdk: ^3.5.1
@@ -53,6 +53,10 @@ dependencies:
   image_picker: ^1.1.2
   desktop_drop: ^0.5.0
   webview_flutter: ^4.10.0
+  # webview_flutter_web: ^0.2.3+4
+  shared_preferences: ^2.3.3
+  provider: ^6.1.2
+  # google_fonts: ^6.2.1
 
 flutter_intl: # NOTE: To apply changes made from intl_en.arb; execute this command on terminal - flutter pub get; dart run intl_utils:generate;
   enabled: true # Required. Must be set to true to activate the package. Default: false
@@ -83,7 +87,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
