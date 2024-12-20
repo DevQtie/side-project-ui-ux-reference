@@ -8,6 +8,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter/foundation.dart' show Uint8List, compute, kIsWeb;
 import 'dart:developer' as developer;
+import 'package:http/http.dart' as http;
 
 class FlutterQuillTest2 extends StatefulWidget {
   const FlutterQuillTest2({super.key});
@@ -18,6 +19,9 @@ class FlutterQuillTest2 extends StatefulWidget {
 
 class _FlutterQuillTest2State extends State<FlutterQuillTest2> {
   final _contentGeneratorController = quill.QuillController.basic();
+
+  Icon _dynamicIcon = Icon(Icons.lock);
+  bool _isSelected = false; // Track selection state
 
   final quillFocusNode = FocusNode();
 
@@ -125,6 +129,53 @@ class _FlutterQuillTest2State extends State<FlutterQuillTest2> {
     };
   }
 
+  Future<void> processQuillDelta(String quillDelta) async {
+    // Parse the JSON string into a Dart object
+    final List<Map<String, dynamic>> delta =
+        List<Map<String, dynamic>>.from(jsonDecode(quillDelta));
+
+    // Iterate through the delta to process image blobs
+    for (var insert in delta) {
+      if (insert.containsKey('insert') &&
+          insert['insert'] is Map &&
+          insert['insert'].containsKey('image')) {
+        final String imageUrl = insert['insert']['image'];
+
+        if (imageUrl.startsWith('blob:')) {
+          // Fetch the image data
+          final base64String = await _convertBlobToBase64(imageUrl);
+
+          if (base64String != null) {
+            // Replace the blob URL with the Base64 string
+            insert['insert']['image'] =
+                'data:image/png;base64,$base64String'; // Adjust MIME type if needed
+          }
+        }
+      }
+    }
+
+    // Convert the updated delta back to JSON
+    final updatedQuillDelta = jsonEncode(delta);
+
+    textEditingController.text = updatedQuillDelta;
+    debugPrint(updatedQuillDelta);
+  }
+
+// Helper function to fetch and convert a blob URL to Base64
+  Future<String?> _convertBlobToBase64(String blobUrl) async {
+    try {
+      // Fetch the image data from the blob URL
+      final response = await http.get(Uri.parse(blobUrl));
+      if (response.statusCode == 200) {
+        // Convert the image bytes to Base64
+        return base64Encode(response.bodyBytes);
+      }
+    } catch (e) {
+      debugPrint('Error fetching image: $e');
+    }
+    return null; // Return null if an error occurs
+  }
+
   @override
   void initState() {
     super.initState();
@@ -209,6 +260,33 @@ class _FlutterQuillTest2State extends State<FlutterQuillTest2> {
                             controller: _contentGeneratorController,
                             configurations:
                                 quill.QuillSimpleToolbarConfigurations(
+                              customButtons: [
+                                quill.QuillToolbarCustomButtonOptions(
+                                  icon: _dynamicIcon,
+                                  onPressed: () {
+                                    debugPrint('snowflake1');
+                                    setState(() {
+                                      _isSelected =
+                                          !_isSelected; // Toggle selection
+                                      _dynamicIcon = _isSelected
+                                          ? Icon(Icons.lock_open)
+                                          : Icon(Icons.lock); // Update icon
+                                    });
+                                  },
+                                ),
+                                quill.QuillToolbarCustomButtonOptions(
+                                  icon: const Icon(Icons.ac_unit),
+                                  onPressed: () {
+                                    debugPrint('snowflake2');
+                                  },
+                                ),
+                                quill.QuillToolbarCustomButtonOptions(
+                                  icon: const Icon(Icons.ac_unit),
+                                  onPressed: () {
+                                    debugPrint('snowflake3');
+                                  },
+                                ),
+                              ],
                               dialogTheme: quill.QuillDialogTheme(
                                 dialogBackgroundColor: isDarkMode
                                     ? Colors.grey.shade900
@@ -353,7 +431,8 @@ class _FlutterQuillTest2State extends State<FlutterQuillTest2> {
                               // Convert the document back to JSON for easy logging
                               documentJson =
                                   jsonEncode(document.toDelta().toJson());
-                              textEditingController.text = documentJson;
+                              processQuillDelta(documentJson);
+                              // textEditingController.text = documentJson;
                               developer.log('String Delta: $documentJson');
                             });
                           },

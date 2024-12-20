@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_observer/flutter_test/border_observer.dart';
 import 'package:flutter_observer/flutter_test/bottom_sheet_w_dialog.dart';
+import 'package:flutter_observer/flutter_test/customized_flutter_quill.dart';
+import 'package:flutter_observer/flutter_test/data_checker.dart';
 import 'package:flutter_observer/flutter_test/floating_button_action.dart';
 import 'package:flutter_observer/flutter_test/flutter_dropdown_width.dart';
 import 'package:flutter_observer/flutter_test/flutter_quill_test.dart';
@@ -10,19 +12,32 @@ import 'package:flutter_observer/flutter_test/flutter_quill_test3.dart';
 import 'package:flutter_observer/flutter_test/flutter_textformfield.dart';
 import 'package:flutter_observer/flutter_test/flutter_web.dart';
 import 'package:flutter_observer/flutter_test/flutter_web2.dart';
+import 'package:flutter_observer/flutter_test/height_inspector.dart';
 import 'package:flutter_observer/flutter_test/image_memory.dart';
 import 'package:flutter_observer/flutter_test/import_observe.dart';
+import 'package:flutter_observer/flutter_test/insert_item_listview.dart';
+import 'package:flutter_observer/flutter_test/insert_item_listview2.dart';
+import 'package:flutter_observer/flutter_test/main_stuff.dart';
 import 'package:flutter_observer/flutter_test/media_query_test.dart';
+import 'package:flutter_observer/flutter_test/observe_readmore.dart';
+import 'package:flutter_observer/flutter_test/recursive_call_test.dart';
+import 'package:flutter_observer/flutter_test/row_text_fields.dart';
 import 'package:flutter_observer/flutter_test/stopwatch_page.dart';
+import 'package:flutter_observer/flutter_test/system_bar_color.dart';
 import 'package:flutter_observer/flutter_test/text_button.dart';
+import 'package:flutter_observer/flutter_test/value_notifier.dart';
 import 'package:flutter_observer/flutter_test/value_verifier.dart';
+import 'package:flutter_observer/flutter_test/video_test.dart';
 import 'package:flutter_observer/generated/l10n.dart';
+import 'package:flutter_observer/test_route/favourites.dart';
+import 'package:flutter_observer/test_route/home_nav_host.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 // import 'package:webview_flutter_web/webview_flutter_web.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  // WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MyApp(),
     // ChangeNotifierProvider(
@@ -67,6 +82,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system, // Follow system theme
       theme: lightTheme, //ThemeData.light(), // Light theme
       darkTheme: darkTheme, //ThemeData.dark(), // Dark theme
+      debugShowCheckedModeBanner: false, // This hides the debug banner
       // theme: ThemeData(
       //   // This is the theme of your application.
       //   //
@@ -87,10 +103,65 @@ class MyApp extends StatelessWidget {
       //   useMaterial3: true,
       // ),
       home:
-          const FlutterQuillTest2(), //const MyHomePage(title: 'Flutter Demo Home Page'),
+          const SomeListWidget2(), //const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
+
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      MaterialApp.router(routerConfig: mainRouter);
+}
+
+final _mainKey = GlobalKey<NavigatorState>();
+final _dashboardKey = GlobalKey<NavigatorState>();
+final _favouritesKey = GlobalKey<NavigatorState>();
+final _settingsKey = GlobalKey<NavigatorState>();
+final GoRouter mainRouter = GoRouter(
+  initialLocation: '/dashboard',
+  navigatorKey: _mainKey,
+  routes: [
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          HomeNavHost(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          navigatorKey: _dashboardKey,
+          routes: [
+            GoRoute(
+              path: '/dashboard',
+              pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey, child: Center(child: Text('Dashboard'))),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _favouritesKey,
+          routes: [
+            GoRoute(
+              path: '/favourites',
+              pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey, child: FavouritesScreen()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _settingsKey,
+          routes: [
+            GoRoute(
+              path: '/settings',
+              pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey, child: Center(child: Text('Settings'))),
+            ),
+          ],
+        ),
+      ],
+    )
+  ],
+);
 
 @immutable
 class CustomTheme extends ThemeExtension<CustomTheme> {

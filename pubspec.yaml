@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.5.23+1
+version: 1.6.26+1
 
 environment:
   sdk: ^3.5.1
@@ -56,6 +56,11 @@ dependencies:
   # webview_flutter_web: ^0.2.3+4
   shared_preferences: ^2.3.3
   provider: ^6.1.2
+  sqflite: ^2.4.1
+  video_player: ^2.9.2
+  flutter_keyboard_visibility: ^6.0.0
+  go_router: ^14.6.2
+  readmore: ^3.0.0
   # google_fonts: ^6.2.1
 
 flutter_intl: # NOTE: To apply changes made from intl_en.arb; execute this command on terminal - flutter pub get; dart run intl_utils:generate;
@@ -102,6 +107,7 @@ flutter:
 
   assets:
     - assets/
+    - assets/images/
 
   fonts: #Popularity based on total views as of 10/15/2024 from Google fonts
     - family: roboto #Christian Robertson designer; #27,862,326,785,287 total views

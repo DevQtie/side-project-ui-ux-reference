@@ -58,19 +58,22 @@ class _FlutterQuillTest3State extends State<FlutterQuillTest3> {
 
   /// [test1.test2]
   /// [test2] // manual setting of method reference
-  void test1() { //method 1
+  void test1() {
+    //method 1
     debugPrint('this is a test 1');
     test2();
   }
 
   /// [test3] // manual setting of method reference
-  void test2() { //method 2
+  void test2() {
+    //method 2
     debugPrint('this is a test 2');
     test3();
   }
 
   /// [test1],[test2] // manual setting of method references
-  void test3() { //method 3
+  void test3() {
+    //method 3
     debugPrint('this is a test 3');
     test1();
     test2();
@@ -121,6 +124,9 @@ class _FlutterQuillTest3State extends State<FlutterQuillTest3> {
                 focusNode: quillFocusNode,
                 controller: __contentDecoderController,
                 configurations: quill.QuillEditorConfigurations(
+                    readOnlyMouseCursor: SystemMouseCursors.forbidden,
+                    scrollable: true,
+                    scrollPhysics: const BouncingScrollPhysics(),
                     embedBuilders: kIsWeb
                         ? FlutterQuillEmbeds.editorWebBuilders(
                             videoEmbedConfigurations: null,
@@ -194,7 +200,7 @@ class ClassC {
 }
 
 class ClassB {
-    /// [ClassA.methodA1]
+  /// [ClassA.methodA1]
   void methodB1() {
     ClassA().methodA1();
   }
