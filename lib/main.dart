@@ -12,6 +12,7 @@ import 'package:flutter_observer/flutter_test/flutter_quill_test3.dart';
 import 'package:flutter_observer/flutter_test/flutter_textformfield.dart';
 import 'package:flutter_observer/flutter_test/flutter_web.dart';
 import 'package:flutter_observer/flutter_test/flutter_web2.dart';
+import 'package:flutter_observer/flutter_test/go_router_mobile.dart';
 import 'package:flutter_observer/flutter_test/height_inspector.dart';
 import 'package:flutter_observer/flutter_test/image_memory.dart';
 import 'package:flutter_observer/flutter_test/import_observe.dart';
@@ -24,6 +25,7 @@ import 'package:flutter_observer/flutter_test/recursive_call_test.dart';
 import 'package:flutter_observer/flutter_test/row_text_fields.dart';
 import 'package:flutter_observer/flutter_test/stopwatch_page.dart';
 import 'package:flutter_observer/flutter_test/system_bar_color.dart';
+import 'package:flutter_observer/flutter_test/test_tutorial_c_mark.dart';
 import 'package:flutter_observer/flutter_test/text_button.dart';
 import 'package:flutter_observer/flutter_test/value_notifier.dart';
 import 'package:flutter_observer/flutter_test/value_verifier.dart';
@@ -69,7 +71,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: router,
       title: 'Flutter Demo',
       localizationsDelegates: const [
         S.delegate,
@@ -102,8 +105,8 @@ class MyApp extends StatelessWidget {
       //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       //   useMaterial3: true,
       // ),
-      home:
-          const SomeListWidget2(), //const MyHomePage(title: 'Flutter Demo Home Page'),
+      //home:
+          //const TestTutorialCoachMark(), //const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
