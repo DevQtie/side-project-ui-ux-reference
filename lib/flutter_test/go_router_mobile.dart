@@ -31,34 +31,34 @@ final router = GoRouter(
         state,
         Home(),
       ),
-      // routes: [
-      //   GoRoute(
-      //     path: 'page1',
-      //     pageBuilder: (context, state) => GoRouterMobile.noTransition(
-      //       state,
-      //       Page1(),
-      //     ),
-      //     routes: [
-      //       GoRoute(
-      //         path: 'page2',
-      //         pageBuilder: (context, state) => GoRouterMobile.noTransition(
-      //           state,
-      //           Page2(),
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ],
+      routes: [
+        GoRoute(
+          path: 'page1', // for web browser purposes
+          pageBuilder: (context, state) => GoRouterMobile.noTransition(
+            state,
+            Page1(),
+          ),
+          routes: [
+            GoRoute(
+              path: 'page2', // for web browser purposes
+              pageBuilder: (context, state) => GoRouterMobile.noTransition(
+                state,
+                Page2(),
+              ),
+            ),
+          ],
+        ),
+      ],
     ),
     GoRoute(
-      path: '/page1',
+      path: '/page1', // for mobile app purposes
       pageBuilder: (context, state) => GoRouterMobile.noTransition(
         state,
         Page1(),
       ),
     ),
     GoRoute(
-      path: '/page2',
+      path: '/page2', // for mobile app purposes
       pageBuilder: (context, state) => GoRouterMobile.noTransition(
         state,
         Page2(),
@@ -85,7 +85,7 @@ class _HomeState extends State<Home> {
       _homeFocusNode!.requestFocus();
     });
   }
-  
+
   @override
   void dispose() {
     _homeFocusNode!.dispose();
@@ -115,7 +115,7 @@ class _HomeState extends State<Home> {
             ElevatedButton(
               onPressed: () {
                 kIsWeb
-                    ? context.go('/page1')
+                    ? context.go('///page1')
                     : GoRouter.of(context).push(Uri(path: '/page1').toString());
               },
               child: Text('Go to Page 1'),
@@ -145,7 +145,7 @@ class _Page1State extends State<Page1> {
       _page1FocusNode!.requestFocus();
     });
   }
-  
+
   @override
   void dispose() {
     _page1FocusNode!.dispose();
@@ -155,20 +155,9 @@ class _Page1State extends State<Page1> {
   @override
   Widget build(BuildContext context) {
     return KeyboardVisibilityBuilder(builder: (context, visible) {
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (bool didPop, Object? result) async {
-          if (didPop) {
-            return;
-          }
-          if (visible) {
-            _page1FocusNode!.unfocus();
-          } else {
-            if (GoRouter.of(context).canPop()) {
-              GoRouter.of(context).pop();
-            }
-          }
-        },
+      return PopScopeWidget(
+        page1FocusNode: _page1FocusNode,
+        visible: visible,
         child: KeyboardDismissOnTap(
           dismissOnCapturedTaps: true,
           child: Scaffold(
@@ -201,7 +190,7 @@ class _Page1State extends State<Page1> {
                     onPressed: () {
                       // _page1FocusNode!.dispose();
                       kIsWeb
-                          ? context.go('/page2')
+                          ? context.go('///page1/page2')
                           : GoRouter.of(context)
                               .push(Uri(path: '/page2').toString());
                     },
@@ -214,6 +203,39 @@ class _Page1State extends State<Page1> {
         ),
       );
     });
+  }
+}
+
+class PopScopeWidget extends StatelessWidget {
+  final FocusNode? page1FocusNode;
+  final bool visible;
+  final Widget child;
+
+  const PopScopeWidget({
+    super.key,
+    required this.page1FocusNode,
+    required this.visible,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) {
+          return;
+        }
+        if (visible) {
+          page1FocusNode!.unfocus();
+        } else {
+          if (GoRouter.of(context).canPop()) {
+            GoRouter.of(context).pop();
+          }
+        }
+      },
+      child: child,
+    );
   }
 }
 
@@ -235,7 +257,7 @@ class _Page2State extends State<Page2> {
       _page2FocusNode!.requestFocus();
     });
   }
-  
+
   @override
   void dispose() {
     _page2FocusNode!.dispose();

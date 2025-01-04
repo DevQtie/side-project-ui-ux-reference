@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_observer/flutter_test/border_observer.dart';
 import 'package:flutter_observer/flutter_test/bottom_sheet_w_dialog.dart';
+import 'package:flutter_observer/flutter_test/camera_ui.dart';
+import 'package:flutter_observer/flutter_test/currency_test.dart';
 import 'package:flutter_observer/flutter_test/customized_flutter_quill.dart';
 import 'package:flutter_observer/flutter_test/data_checker.dart';
+import 'package:flutter_observer/flutter_test/custom_markup_text.dart';
 import 'package:flutter_observer/flutter_test/floating_button_action.dart';
 import 'package:flutter_observer/flutter_test/flutter_dropdown_width.dart';
 import 'package:flutter_observer/flutter_test/flutter_quill_test.dart';
@@ -12,7 +15,7 @@ import 'package:flutter_observer/flutter_test/flutter_quill_test3.dart';
 import 'package:flutter_observer/flutter_test/flutter_textformfield.dart';
 import 'package:flutter_observer/flutter_test/flutter_web.dart';
 import 'package:flutter_observer/flutter_test/flutter_web2.dart';
-import 'package:flutter_observer/flutter_test/go_router_mobile.dart';
+import 'package:flutter_observer/flutter_test/go_router_mobile_simp.dart';
 import 'package:flutter_observer/flutter_test/height_inspector.dart';
 import 'package:flutter_observer/flutter_test/image_memory.dart';
 import 'package:flutter_observer/flutter_test/import_observe.dart';
@@ -24,6 +27,7 @@ import 'package:flutter_observer/flutter_test/observe_readmore.dart';
 import 'package:flutter_observer/flutter_test/recursive_call_test.dart';
 import 'package:flutter_observer/flutter_test/row_text_fields.dart';
 import 'package:flutter_observer/flutter_test/stopwatch_page.dart';
+import 'package:flutter_observer/flutter_test/sync_focus_node.dart';
 import 'package:flutter_observer/flutter_test/system_bar_color.dart';
 import 'package:flutter_observer/flutter_test/test_tutorial_c_mark.dart';
 import 'package:flutter_observer/flutter_test/text_button.dart';
@@ -71,8 +75,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: router,
+    return MaterialApp(
       title: 'Flutter Demo',
       localizationsDelegates: const [
         S.delegate,
@@ -105,11 +108,57 @@ class MyApp extends StatelessWidget {
       //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       //   useMaterial3: true,
       // ),
-      //home:
-          //const TestTutorialCoachMark(), //const MyHomePage(title: 'Flutter Demo Home Page'),
+      home:
+          const CameraSetting(), //const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   // This widget is the root of your application.
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp.router(
+//       routerConfig: router,
+//       title: 'Flutter Demo',
+//       localizationsDelegates: const [
+//         S.delegate,
+//         GlobalMaterialLocalizations.delegate,
+//         GlobalWidgetsLocalizations.delegate,
+//         GlobalCupertinoLocalizations.delegate,
+//       ],
+//       locale: const Locale('en', 'PH'), // Set locale to Philippines
+//       supportedLocales: S.delegate.supportedLocales,
+//       themeMode: ThemeMode.system, // Follow system theme
+//       theme: lightTheme, //ThemeData.light(), // Light theme
+//       darkTheme: darkTheme, //ThemeData.dark(), // Dark theme
+//       debugShowCheckedModeBanner: false, // This hides the debug banner
+//       // theme: ThemeData(
+//       //   // This is the theme of your application.
+//       //   //
+//       //   // TRY THIS: Try running your application with "flutter run". You'll see
+//       //   // the application has a purple toolbar. Then, without quitting the app,
+//       //   // try changing the seedColor in the colorScheme below to Colors.green
+//       //   // and then invoke "hot reload" (save your changes or press the "hot
+//       //   // reload" button in a Flutter-supported IDE, or press "r" if you used
+//       //   // the command line to start the app).
+//       //   //
+//       //   // Notice that the counter didn't reset back to zero; the application
+//       //   // state is not lost during the reload. To reset the state, use hot
+//       //   // restart instead.
+//       //   //
+//       //   // This works for code too, not just values: Most code changes can be
+//       //   // tested with just a hot reload.
+//       //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+//       //   useMaterial3: true,
+//       // ),
+//       //home:
+//       //const TestTutorialCoachMark(), //const MyHomePage(title: 'Flutter Demo Home Page'),
+//     );
+//   }
+// }
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -196,7 +245,15 @@ class CustomTheme extends ThemeExtension<CustomTheme> {
 }
 
 final ThemeData lightTheme = ThemeData(
-  useMaterial3: true,
+  // fontFamily: 'roboto',
+  // fontFamilyFallback: const [
+  //   'lato',
+  //   'montserrat',
+  //   'roboto-condensed',
+  //   'noto-sans',
+  //   'merriweather'
+  // ],
+  // useMaterial3: true,
   primaryColor: Colors.lightBlue,
   colorScheme: ColorScheme.light(
     surface: Colors.grey.shade400.withOpacity(0.35),
@@ -335,7 +392,15 @@ final ThemeData lightTheme = ThemeData(
 );
 
 final ThemeData darkTheme = ThemeData(
-  useMaterial3: true,
+  // fontFamily: 'roboto',
+  // fontFamilyFallback: const [
+  //   'lato',
+  //   'montserrat',
+  //   'roboto-condensed',
+  //   'noto-sans',
+  //   'merriweather'
+  // ],
+  // useMaterial3: true,
   primaryColor: const Color.fromARGB(190, 255, 193, 7),
   colorScheme: const ColorScheme.dark(
     surface: Color.fromARGB(35, 0, 0, 0),
