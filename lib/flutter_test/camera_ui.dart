@@ -255,17 +255,54 @@ class _SelfieCameraState extends State<SelfieCamera> {
               child: Center(
                 child: Stack(
                   children: [
-                    ClipOval(
-                        child: Transform(
-                            alignment: Alignment.center,
-                            transform: Matrix4.identity()
-                              ..scale(-1.0, 1.0, 1.0), // Flip horizontally,
-                            child: SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.55,
-                                width: MediaQuery.of(context).size.width * 0.75,
-                                // color: Colors.transparent,
-                                child: CameraPreview(_cameraController!)))),
+                    Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..scale(-1.0, 1.0, 1.0), // Flip horizontally,
+                      child: Transform.scale(
+                        scale: 0.5 /
+                            (_cameraController!.value.aspectRatio *
+                                MediaQuery.of(context).size.aspectRatio),
+                        // scaleX: 2.5 /
+                        //     (_cameraController!.value.aspectRatio /
+                        //         MediaQuery.of(context).size.aspectRatio),
+                        // scaleY: 2.05 /
+                        //     (_cameraController!.value.aspectRatio /
+                        //         MediaQuery.of(context).size.aspectRatio),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ClipOval(
+                              child: SizedBox(
+                                height: 600,
+                                width: 600,
+                                child: CameraPreview(_cameraController!),
+                              ),
+                            ),
+                            ClipOval(
+                              child: SizedBox(
+                                height: 600,
+                                width: 600,
+                                child: CountdownTimer(
+                                    controller: _countDownController,
+                                    onEnd: onEnd,
+                                    endTime: endTime,
+                                    widgetBuilder: (_, time) {
+                                      if (time == null) {
+                                        return SizedBox();
+                                      }
+                                      return CircularProgressIndicator(
+                                        strokeWidth: 50,
+                                        value: double.parse(
+                                            '${((5 - time.sec!) / 5)}'),
+                                      );
+                                    }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     Positioned(
                       top: 0,
                       bottom: 0,
@@ -303,7 +340,7 @@ class _SelfieCameraState extends State<SelfieCamera> {
                             }
                             return Center(
                                 child: Text(
-                              '${time.sec}',
+                              '${time.sec!}',
                               style: Theme.of(context)
                                   .textTheme
                                   .headlineLarge
